@@ -1,6 +1,7 @@
 package com.example.jieun.remoteconfigex.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import com.example.jieun.remoteconfigex.R
@@ -8,6 +9,7 @@ import com.example.jieun.remoteconfigex.constrant.RemoteConfigConstrant.WELCOME_
 import com.example.jieun.remoteconfigex.constrant.RemoteConfigConstrant.WELCOME_MSG
 import com.example.jieun.remoteconfigex.ui.base.BaseActivity
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.iid.FirebaseInstanceId
 
 class MainActivity : BaseActivity() {
 
@@ -17,6 +19,8 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        // get firebase instance token
+        Log.e("IID_TOKEN", FirebaseInstanceId.getInstance().token)
         fetchText()
     }
 
