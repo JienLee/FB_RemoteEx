@@ -102,31 +102,33 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
 
 
   if (!contentType.startsWith('text/')){
-    console.log('This is not an text');
-    return;
-  }
+        console.log('This is not an text');
+        return;
+    }
 
-  if (resourceState === 'not_exists') {
-    console.log('This is a deletion event.');
-    return;
-  }
+  if (contentType.startsWith('text/html')) {
+    if (resourceState === 'not_exists') {
+      console.log('This is a deletion event.');
+      return;
+    }
 
-  if (resourceState === 'exists' && metageneration > 1) {
+    if (resourceState === 'exists' && metageneration > 1) {
       console.log('This is a metadata chagne event');
       return;
-  }
+    }
+        
+    const fileName= path.basename(filePath);
+    console.log('fileName : ', fileName);
 
-  const fileName= path.basename(filePath);
-  console.log('fileName : ', fileName);
+    const test = object.selfLink;
+    console.log('url test : ', test);
 
-  const test = object.selfLink;
-  console.log('url test : ', test);
-
-  return admin.database().ref("/app_splash/changed").set(fileName, function(snapshot){
+    return admin.database().ref("/app_splash/changed").set(fileName, function(error){
       if (error) {
         alert("Data could not be saved." + error);
       } else {
         alert("Data saved successfully.");
       }
     });
+  }
 });
