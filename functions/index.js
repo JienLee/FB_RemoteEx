@@ -106,8 +106,6 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
     return;
   }
 
-  const fileName = path.basename(filePath);
-
   if (resourceState === 'not_exists') {
     console.log('This is a deletion event.');
     return;
@@ -118,14 +116,17 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
       return;
   }
 
-  console.log('file name : ', fileName);
-  const bucket = gcs.bucket(fileBucket);
-  const tempFilePath = path.join(os.tmpdir(), fileName);
-  const metadata = { contentType : contentType};
-  return admin.database().ref("/app_splash/changed").once('value', function(snapshot){
-    console.log('snapshot original value : ', snapshot.val());
-    snapshot.set(fileName);
-  }).then(()=>{
-    console.log('updated');
-  });
+  const fileName= path.basename(filePath);
+  console.log('fileName : ', fileName);
+
+  const test = object.getDownloadUrl().toString();
+  console.log('url test : ', test);
+
+  return admin.database().ref("/app_splash/changed").set(fileName, function(snapshot){
+      if (error) {
+        alert("Data could not be saved." + error);
+      } else {
+        alert("Data saved successfully.");
+      }
+    });
 });
