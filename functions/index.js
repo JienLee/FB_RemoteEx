@@ -119,7 +119,7 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
   const fileName= path.basename(filePath);
   console.log('fileName : ', fileName);
 
-  const test = object.getDownloadUrl();
+  const test = object.mediaLink;
   console.log('url test : ', test);
 
   return admin.database().ref("/app_splash/changed").set(fileName, function(snapshot){
