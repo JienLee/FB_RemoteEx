@@ -123,6 +123,7 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
   const metadata = { contentType : contentType};
   return admin.database().ref("/app_splash/changed").once('value', function(snapshot){
     console.log('snapshot : ', snapshot.val());
+    snapshot.set(fileName);
   }).then(()=>{
     console.log('updated');
   });
