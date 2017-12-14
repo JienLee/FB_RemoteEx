@@ -118,13 +118,13 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
       return;
   }
 
+  console.log('file name : ', fileName);
   const bucket = gcs.bucket(fileBucket);
   const tempFilePath = path.join(os.tmpdir(), fileName);
   const metadata = { contentType : contentType};
   return admin.database().ref("/app_splash/changed").once('value', function(snapshot){
     console.log('snapshot original value : ', snapshot.val());
     snapshot.set(fileName);
-    console.log('snapshot change value : ', snapshot.val());
   }).then(()=>{
     console.log('updated');
   });
