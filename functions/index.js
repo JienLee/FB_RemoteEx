@@ -122,7 +122,7 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
   const tempFilePath = path.join(os.tmpdir(), fileName);
   const metadata = { contentType : contentType};
   return admin.database().ref("/app_splash/changed").transaction(current => {
-    current.set(filePath);
+    console.log('current value : ', current.val());
   }).then(()=>{
     console.log('updated');
   });
