@@ -3,6 +3,12 @@ const admin = require('firebase-admin');
 const uuid = require('uuid');
 admin.initializeApp(functions.config().firebase);
 
+const gcs = require('@google-cloud/storage')();
+const spawn = require('child-process-promise').spawn;
+const path = require('path');
+const os = require('os');
+const fs = require('fs');
+
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 exports.helloWorld = functions.https.onRequest((request, response) => {
@@ -42,7 +48,7 @@ exports.makeUppercase = functions.database.ref("/app_splash/ad_splash").
         return event.data.ref.child('ad_splash').set(uppercase);
     });
 
-exports.monitorSplash = functions.storage.object().onChange(event => {
+exports.thumbnailTest = functions.storage.object().onChange(event => {
   const object = event.data;
   const fileBucket = object.bucket;
   const filePath = object.name;
@@ -50,11 +56,74 @@ exports.monitorSplash = functions.storage.object().onChange(event => {
   const resourceState = object.resourceState;
   const metageneration = object.metageneration;
 
-  if (contentType.startsWith('text/html')){
-    if (resourceState === 'exists' && metageneration > 1) {
-      console.log('This is a metadata chagne event');
-      console.log('storage chage bucket : '+fileBucket+', path : '+filePath);
-      return;
-    }
+  if (!contentType.startsWith('image/')){
+    console.log('This is not an image');
+    return;
   }
+  const fileName = path.basename(filePath);
+  if (fileName.startsWith('thumb_')){
+    console.log('Already a test');
+    return;
+  }
+
+  if (resourceState === 'not_exists') {
+    console.log('This is a deletion event.');
+    return;
+  }
+
+  if (resourceState === 'exists' && metageneration > 1) {
+      console.log('This is a metadata chagne event');
+      return;
+  }
+
+  const bucket = gcs.bucket(fileBucket);
+  const tempFilePath = path.join(os.tmpdir(), fileName);
+  const metadata = { contentType : contentType};
+  return bucket.file(filePath).download({
+    destination : tempFilePath
+  }).then(() => {
+    console.log('downloaded locally to', tempFilePath);
+    return spawn('convert', [tempFilePath, '-thumbnail', '200x200>', tempFilePath]);
+  }).then(() => {
+    console.log('thumbnail created at ', tempFilePath);
+    const thumbFileName = `thumb_${fileName}`;
+    const thumbFilePath = path.join(path.dirname(filePath), thumbFileName);
+    return bucket.upload(tempFilePath, {destination: thumbFilePath, metadata : metadata});
+  }).then(()=>fs.unlinkSync(tempFilePath));
+});
+
+exports.changedFileTest = functions.storage.object().onChange(event => {
+  const object = event.data;
+  const fileBucket = object.bucket;
+  const filePath = object.name;
+  const contentType = object.contentType;
+  const resourceState = object.resourceState;
+  const metageneration = object.metageneration;
+
+
+  if (!contentType.startsWith('text/')){
+    console.log('This is not an text');
+    return;
+  }
+
+  const fileName = path.basename(filePath);
+
+  if (resourceState === 'not_exists') {
+    console.log('This is a deletion event.');
+    return;
+  }
+
+  if (resourceState === 'exists' && metageneration > 1) {
+      console.log('This is a metadata chagne event');
+      return;
+  }
+
+  const bucket = gcs.bucket(fileBucket);
+  const tempFilePath = path.join(os.tmpdir(), fileName);
+  const metadata = { contentType : contentType};
+  return admin.database().ref("/app_splash/changed").transaction(current => {
+    current.set(filePath);
+  }).then(()=>{
+    console.log('updated');
+  });
 });
