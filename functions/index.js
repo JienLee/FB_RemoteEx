@@ -8,6 +8,7 @@ const spawn = require('child-process-promise').spawn;
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const bucket = admin.storage().bucket();
 
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
@@ -76,10 +77,10 @@ exports.thumbnailTest = functions.storage.object().onChange(event => {
       return;
   }
 
-  const bucket = gcs.bucket(fileBucket);
+  const myBucket = gcs.bucket(fileBucket);
   const tempFilePath = path.join(os.tmpdir(), fileName);
   const metadata = { contentType : contentType};
-  return bucket.file(filePath).download({
+  return myBucket.file(filePath).download({
     destination : tempFilePath
   }).then(() => {
     console.log('downloaded locally to', tempFilePath);
@@ -88,7 +89,7 @@ exports.thumbnailTest = functions.storage.object().onChange(event => {
     console.log('thumbnail created at ', tempFilePath);
     const thumbFileName = `thumb_${fileName}`;
     const thumbFilePath = path.join(path.dirname(filePath), thumbFileName);
-    return bucket.upload(tempFilePath, {destination: thumbFilePath, metadata : metadata});
+    return myBucket.upload(tempFilePath, {destination: thumbFilePath, metadata : metadata});
   }).then(()=>fs.unlinkSync(tempFilePath));
 });
 
@@ -117,12 +118,11 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
       return;
     }
         
-    const bucket = gcs.bucket(fileBucket);
-
+  
     const fileName= path.basename(filePath);
     console.log('fileName : ', fileName);
 
-    var pathReference = bucket.ref(filePath+"/"+fileName);
+    var pathReference = bucket.child(filePath+"/"+fileName);
     console.log('pathReference : ', pathReference);
 
     return admin.database().ref("/app_splash/changed").set(fileName, function(error){
