@@ -122,8 +122,7 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
     const fileName= path.basename(filePath);
     console.log('fileName : ', fileName);
 
-    var storage = firebase.storage();
-    var pathReference = storage.ref(filePath+"/"+fileName);
+    var pathReference = bucket.ref(filePath+"/"+fileName);
     console.log('pathReference : ', pathReference);
 
     return admin.database().ref("/app_splash/changed").set(fileName, function(error){
