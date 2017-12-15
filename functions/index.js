@@ -120,14 +120,14 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
     const fileName= path.basename(filePath);
     console.log('fileName : ', fileName);
 
-    const test = object.selfLink;
-    console.log('url test : ', test);
+    const fileLink = object.selfLink;
+    console.log('fileLink : ', fileLink);
 
-    return admin.database().ref("/app_splash/changed").set(fileName, function(error){
+    return admin.database().ref("/app_splash/changed").set(fileLink, function(error){
       if (error) {
-        alert("Data could not be saved." + error);
+        console.log("Data could not be saved." + error);
       } else {
-        alert("Data saved successfully.");
+        console.log("Data saved successfully.");
       }
     });
   }
