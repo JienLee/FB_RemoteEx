@@ -122,6 +122,9 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
 
     const fileLink = object.selfLink;
     console.log('fileLink : ', fileLink);
+    
+    const testFile = gcs.bucket(fileBucket).file(filePath);
+    console.log('file : ${testFile}');
 
     return admin.database().ref("/app_splash/changed").set(fileLink, function(error){
       if (error) {
