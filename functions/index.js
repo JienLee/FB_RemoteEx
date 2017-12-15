@@ -117,13 +117,16 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
       return;
     }
         
+    const bucket = gcs.bucket(fileBucket);
+
     const fileName= path.basename(filePath);
     console.log('fileName : ', fileName);
 
-    const fileLink = object.selfLink;
-    console.log('fileLink : ', fileLink);
+    var storage = firebase.storage();
+    var pathReference = storage.ref(filePath+"/"+fileName);
+    console.log('pathReference : ', pathReference);
 
-    return admin.database().ref("/app_splash/changed").set(fileLink, function(error){
+    return admin.database().ref("/app_splash/changed").set(fileName, function(error){
       if (error) {
         console.log("Data could not be saved." + error);
       } else {
