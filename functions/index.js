@@ -8,7 +8,6 @@ const spawn = require('child-process-promise').spawn;
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-const bucket = admin.storage().bucket();
 
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
@@ -122,8 +121,8 @@ exports.changedFileTest = functions.storage.object().onChange(event => {
     const fileName= path.basename(filePath);
     console.log('fileName : ', fileName);
 
-    var pathReference = bucket.child(filePath+"/"+fileName);
-    console.log('pathReference : ', pathReference);
+    var file = gcs.bucket(fileBucket).file(fileName);
+    console.log('file : ', file);
 
     return admin.database().ref("/app_splash/changed").set(fileName, function(error){
       if (error) {
